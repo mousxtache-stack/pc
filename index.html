@@ -3,71 +3,142 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Contrôle de mon PC</title>
+  <title>Gestion Réseau PC</title>
+  <!-- Importation de la police Google Montserrat -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+  <!-- Importation d'Animate.css pour les animations -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
   <style>
+    /* Reset et configuration générale */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     body {
-      font-family: Arial, sans-serif;
-      margin: 2rem;
-      background-color: #f5f5f5;
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #74ABE2, #5563DE);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
     }
     h1 {
-      color: #333;
+      font-size: 2.5rem;
+      margin-bottom: 20px;
     }
-    #bandwidth p {
+    .section {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .section:hover {
+      transform: scale(1.03);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    }
+    h2 {
+      font-size: 1.8rem;
+      margin-bottom: 15px;
+    }
+    p {
       font-size: 1.2rem;
+      margin: 10px 0;
     }
     button {
-      padding: 0.8rem 1.2rem;
+      background-color: #5563DE;
+      border: none;
+      padding: 15px 25px;
       font-size: 1rem;
-      margin-bottom: 1rem;
+      color: #fff;
+      border-radius: 8px;
       cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+      margin: 10px;
+    }
+    button:hover {
+      background-color: #4450B3;
+      transform: translateY(-3px);
+    }
+    #notification {
+      margin-top: 20px;
+      font-size: 1rem;
+      min-height: 24px;
     }
   </style>
 </head>
 <body>
-  <h1>Contrôle de mon PC</h1>
+  <h1 class="animate__animated animate__fadeInDown">Gestion Réseau PC</h1>
   
-  <button id="toggle-connection">Basculer la connexion</button>
-  
-  <h2>Débits utilisés</h2>
-  <div id="bandwidth">
-    <p>Téléchargement : <span id="download">0</span> Mbps</p>
-    <p>Téléversement : <span id="upload">0</span> Mbps</p>
+  <div class="section animate__animated animate__fadeInUp">
+    <h2>Débits Réseau</h2>
+    <div id="bandwidth">
+      <p id="download">Téléchargement : -- Mbps</p>
+      <p id="upload">Téléversement : -- Mbps</p>
+    </div>
+    <button onclick="getBandwidth()">Actualiser</button>
   </div>
-
+  
+  <div class="section animate__animated animate__fadeInUp">
+    <h2>Contrôle Wi-Fi</h2>
+    <button onclick="toggleConnection()">Basculer la Connexion</button>
+  </div>
+  
+  <div id="notification" class="animate__animated"></div>
+  
   <script>
-    // Remplacez par l'URL de votre back-end
+    // Remplace cette URL par l'URL de ton serveur local
     const API_URL = 'http://192.168.1.121:3000';
 
-    // Bouton pour basculer (activer/désactiver) la connexion
-    document.getElementById('toggle-connection').addEventListener('click', () => {
-      fetch(`${API_URL}/toggle-connection`, {
+    function getBandwidth() {
+      const notification = document.getElementById('notification');
+      notification.textContent = "Chargement des débits...";
+      fetch(API_URL + '/bandwidth')
+        .then(response => response.json())
+        .then(data => {
+          if(data.error) {
+            notification.textContent = "Erreur: " + data.error;
+          } else {
+            document.getElementById('download').textContent = "Téléchargement : " + data.download;
+            document.getElementById('upload').textContent = "Téléversement : " + data.upload;
+            notification.textContent = "Mise à jour réussie!";
+          }
+          // Efface le message après 2 secondes
+          setTimeout(() => { notification.textContent = ""; }, 2000);
+        })
+        .catch(error => {
+          notification.textContent = "Erreur lors de la récupération: " + error;
+        });
+    }
+
+    function toggleConnection() {
+      const notification = document.getElementById('notification');
+      notification.textContent = "Modification de la connexion...";
+      fetch(API_URL + '/toggle-connection', {
         method: 'POST'
       })
       .then(response => response.json())
       .then(data => {
-        alert('La connexion a été ' + data.status);
+        if(data.error) {
+          notification.textContent = "Erreur: " + data.error;
+        } else {
+          notification.textContent = "La connexion est maintenant " + data.status;
+        }
+        // Efface le message après 2 secondes
+        setTimeout(() => { notification.textContent = ""; }, 2000);
       })
-      .catch(err => {
-        console.error(err);
-        alert('Erreur lors de la modification de la connexion.');
+      .catch(error => {
+        notification.textContent = "Erreur lors du changement: " + error;
       });
-    });
-
-    // Fonction pour récupérer le débit réseau
-    function fetchBandwidth() {
-      fetch(`${API_URL}/bandwidth`)
-      .then(response => response.json())
-      .then(data => {
-        document.getElementById('download').textContent = data.download;
-        document.getElementById('upload').textContent = data.upload;
-      })
-      .catch(err => console.error(err));
     }
-
-    // Rafraîchir les données toutes les 5 secondes
-    setInterval(fetchBandwidth, 5000);
-    fetchBandwidth();
   </script>
 </body>
 </html>
