@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrôle PC</title>
+    <script>
+        async function toggleConnection(action) {
+            await fetch(`http://192.168.1.X:5000/network?action=${action}`);
+        }
+
+        async function getNetworkUsage() {
+            let response = await fetch(`http://192.168.1.X:5000/network_usage`);
+            let data = await response.json();
+            document.getElementById("network-info").innerText = `Download: ${data.download} Mbps, Upload: ${data.upload} Mbps`;
+        }
+
+        setInterval(getNetworkUsage, 5000);
+    </script>
+</head>
+<body>
+    <h1>Contrôle PC</h1>
+    <button onclick="toggleConnection('disable')">Désactiver Connexion</button>
+    <button onclick="toggleConnection('enable')">Activer Connexion</button>
+    <p id="network-info">Débits en attente...</p>
+</body>
+</html>
