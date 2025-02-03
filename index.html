@@ -1,27 +1,74 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contrôle PC</title>
-    <script>
-        async function toggleConnection(action) {
-            await fetch(`http://192.168.1.X:5000/network?action=${action}`);
-        }
-
-        async function getNetworkUsage() {
-            let response = await fetch(`http://192.168.1.254:5000/network_usage`);
-            let data = await response.json();
-            document.getElementById("network-info").innerText = `Download: ${data.download} Mbps, Upload: ${data.upload} Mbps`;
-        }
-
-        setInterval(getNetworkUsage, 5000);
-    </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contrôle de mon PC</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      background-color: #f5f5f5;
+    }
+    h1 {
+      color: #333;
+    }
+    #bandwidth p {
+      font-size: 1.2rem;
+    }
+    button {
+      padding: 0.8rem 1.2rem;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-    <h1>Contrôle PC</h1>
-    <button onclick="toggleConnection('disable')">Désactiver Connexion</button>
-    <button onclick="toggleConnection('enable')">Activer Connexion</button>
-    <p id="network-info">Débits en attente...</p>
+  <h1>Contrôle de mon PC</h1>
+  
+  <button id="toggle-connection">Basculer la connexion</button>
+  
+  <h2>Débits utilisés</h2>
+  <div id="bandwidth">
+    <p>Téléchargement : <span id="download">0</span> Mbps</p>
+    <p>Téléversement : <span id="upload">0</span> Mbps</p>
+  </div>
+
+  <script>
+    // Remplacez par l'URL de votre back-end
+    const API_URL = '192.168.1.121
+:3000';
+
+    // Bouton pour basculer (activer/désactiver) la connexion
+    document.getElementById('toggle-connection').addEventListener('click', () => {
+      fetch(`${API_URL}/toggle-connection`, {
+        method: 'POST'
+      })
+      .then(response => response.json())
+      .then(data => {
+        alert('La connexion a été ' + data.status);
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Erreur lors de la modification de la connexion.');
+      });
+    });
+
+    // Fonction pour récupérer le débit réseau
+    function fetchBandwidth() {
+      fetch(`${API_URL}/bandwidth`)
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('download').textContent = data.download;
+        document.getElementById('upload').textContent = data.upload;
+      })
+      .catch(err => console.error(err));
+    }
+
+    // Rafraîchir les données toutes les 5 secondes
+    setInterval(fetchBandwidth, 5000);
+    fetchBandwidth();
+  </script>
 </body>
 </html>
