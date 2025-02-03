@@ -10,7 +10,7 @@
         }
 
         async function getNetworkUsage() {
-            let response = await fetch(`http://192.168.1.X:5000/network_usage`);
+            let response = await fetch(`http://192.168.1.254:5000/network_usage`);
             let data = await response.json();
             document.getElementById("network-info").innerText = `Download: ${data.download} Mbps, Upload: ${data.upload} Mbps`;
         }
